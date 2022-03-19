@@ -21,12 +21,44 @@ function CreateNewEmployee(){
 
 }
 function CreateNewRole(){
-    db.query("select department.id as 'Department Id',department.name as 'Department Name' from department",(err, results)=>{
-        console.log("Results:")
-        console.log(results)
-        console.log("Length of results: "+results.length)
-        console.log("Index 1 of results: ")
-        console.log(results[1])
+    db.query("select department.id as 'Department Id',department.name as 'Department Name' from department",(err, DepartmentResults)=>{
+        var DepartmentOptions=[]
+        for (var x=0;x<DepartmentResults.length;x++){
+            DepartmentOptions.push(DepartmentResults[x]["Department Name"])
+        }
+        console.log(DepartmentOptions)
+        inquirer
+        .prompt([
+            {
+                name:"DepartmentSelected",
+                message:"What department will the role belong to?",
+                type:"list",
+                choices:DepartmentOptions
+            },
+            {
+                type:"number",
+                message:"What is the salary of the given role?",
+                name:"RoleSalary"
+            },
+            {
+                name:"RoleName",
+                message:"What is the name of the role?"
+            }
+        ])
+        .then((answers)=>{
+            var DPTChoice
+            for (var x=0;x<DepartmentResults.length;x++){
+                if (DepartmentResults[x]["Department Name"]==answers.DepartmentSelected){
+                    DPTChoice=DepartmentResults[x]["Department Id"]
+                    break
+                }
+            }
+            console.log(`(${toString(answers.RoleName)},${Number(answers.RoleSalary)},${Number(DPTChoice)})`)
+            db.query(`insert into role (title,salary,department_id) values (${toString(answers.RoleName)},${Number(answers.RoleSalary)},${Number(DPTChoice)})`,(err,results)=>{
+                err ? console.error(err) : console.log("Role successfully created")
+                AskAllQuestions()
+            })
+        })
     })
 }
 function CreateNewDepartment(){
