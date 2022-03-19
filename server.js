@@ -17,6 +17,41 @@ const db = mysql.createConnection(
     },
     console.log(`Connected to the inventory_db database.`)
 );
+function ChangeEmployeeRole(){
+    db.query(`select employee.id, concat(employee.first_name," ",employee.last_name) as Names from employee`,(err,EmployeeNames)=>{
+        db.query(`select role.id,role.title from role`,(err,RoleResults)=>{
+            var RoleOptions = []
+            var EmployeeOptions=[]
+            for (var x=0;x<RoleResults.length;x++){RoleOptions.push(RoleResults[x].title)}
+            for (var x=0;x<EmployeeNames.length;x++){EmployeeOptions.push(EmployeeNames[x].Names)}
+            inquirer.prompt([
+                {
+                    type:"list",
+                    message:"Which employee do you want to change?",
+                    name:"employee_selected",
+                    choices:EmployeeOptions
+                },
+                {
+                    type:"list",
+                    message:"Which role would you like them to have?",
+                    name:"role_choice",
+                    choices:RoleOptions
+                }
+            ])
+            .then((answers)=>{
+                var RoleChoice
+                var EmployeeChoice
+                for (var x=0;x<RoleResults.length;x++){if (RoleResults[x].title==answers.role_choice){RoleChoice=RoleResults[x].id; break}}
+                for (var x=0;x<EmployeeNames.length;x++){if (EmployeeNames[x].Names==answers.employee_selected){EmployeeChoice=EmployeeNames[x].id; break}}
+                db.query(`update employee set role_id = ${RoleChoice} where id=${EmployeeChoice}`,(err,results)=>{
+                    err ? console.error(err) : console.log("Role successfully created")
+                    AskAllQuestions()
+                })
+            })
+        })
+    })
+}
+
 function CreateNewEmployee(){
     db.query(`select role.id,role.title from role`,(err,RoleResults)=>{
         db.query(`select employee.id, concat(employee.first_name," ",employee.last_name) as Names from employee`,(err,EmployeeNames)=>{
@@ -144,7 +179,8 @@ function AskAllQuestions(){
                 "View all employees",
                 "Create new department",
                 "Create new role",
-                "Create new employee"
+                "Create new employee",
+                "Change employee role"
             ]
         }
     ]).then((answers)=>{
@@ -160,6 +196,8 @@ function AskAllQuestions(){
             CreateNewRole()
         }else if(answers.ChoiceMade=="Create new employee"){
             CreateNewEmployee()
+        }else if(answers.ChoiceMade=="Change employee role"){
+            ChangeEmployeeRole()
         }else{
             console.error("Invalid choice")
         }
