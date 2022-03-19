@@ -19,15 +19,11 @@ const db = mysql.createConnection(
 );
 function CreateNewEmployee(){
     db.query(`select role.id,role.title from role`,(err,RoleResults)=>{
-        console.log(RoleResults)
         db.query(`select employee.id, concat(employee.first_name," ",employee.last_name) as Names from employee`,(err,EmployeeNames)=>{
-            console.log(EmployeeNames)
             var RoleOptions = []
             var EmployeeOptions=["null"]
             for (var x=0;x<RoleResults.length;x++){RoleOptions.push(RoleResults[x].title)}
             for (var x=0;x<EmployeeNames.length;x++){EmployeeOptions.push(EmployeeNames[x].Names)}
-            console.log(RoleOptions)
-            console.log(EmployeeOptions)
             inquirer.prompt([
                 {
                     message:"What is the employee's first name?",
@@ -41,7 +37,7 @@ function CreateNewEmployee(){
                     type:"list",
                     message:"What is the role of the employee?",
                     choices:RoleOptions,
-                    name:employee_role
+                    name:"EmployeeRole"
                 },
                 {
                     type:"list",
@@ -50,7 +46,16 @@ function CreateNewEmployee(){
                     choices:EmployeeOptions
                 }
             ]).then((answers)=>{
-                console.log(answers)
+                var RoleChoice
+                var ManagerChoice="null"
+                for (var x=0;x<RoleResults.length;x++){if (RoleResults[x].title==answers.EmployeeRole){RoleChoice=RoleResults[x].id; break}}
+                if (answers.ReportTo!="null"){
+                    for (var x=0;x<EmployeeNames.length;x++){if (EmployeeNames[x].Names==answers.ReportTo){ManagerChoice=EmployeeNames[x].id; break}}
+                }
+                db.query(`insert into employee (first_name,last_name,role_id,manager_id) values ("${answers.first_name}","${answers.last_name}",${RoleChoice},${ManagerChoice})`,(err,results)=>{
+                    err ? console.error(err) : console.log("Role successfully created")
+                    AskAllQuestions()
+                })
             })
         })
     })
