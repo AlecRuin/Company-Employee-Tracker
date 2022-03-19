@@ -1,3 +1,4 @@
+//Import all dependancies in file and reference them by variables
 const inquirer = require("inquirer")
 const express = require("express")
 const mysql = require('mysql2');
@@ -6,6 +7,7 @@ const app = express();
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+//use express to log into mysql
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -17,6 +19,11 @@ const db = mysql.createConnection(
     },
     console.log(`Connected to the inventory_db database.`)
 );
+/*this function calls mysql and gathers all employees and all roles. 
+After prompting the user which employee to modify, 
+it will show all availible role options. After picking an option, it will push this change to the database.
+finally, it will call the AskAllQuestions function again to repeat the loop
+*/
 function ChangeEmployeeRole(){
     db.query(`select employee.id, concat(employee.first_name," ",employee.last_name) as Names from employee`,(err,EmployeeNames)=>{
         db.query(`select role.id,role.title from role`,(err,RoleResults)=>{
@@ -51,7 +58,10 @@ function ChangeEmployeeRole(){
         })
     })
 }
-
+/*this function calls mysql and gathers all roles and all existing employees. 
+After prompting the user new employee first name, last name, role, and manager, it will push this change to the database.
+It uses 2 for-loops at the end to figure out what index the role and manager options belong to, and properly converts that into primary keys before sending the query
+*/
 function CreateNewEmployee(){
     db.query(`select role.id,role.title from role`,(err,RoleResults)=>{
         db.query(`select employee.id, concat(employee.first_name," ",employee.last_name) as Names from employee`,(err,EmployeeNames)=>{
@@ -95,6 +105,11 @@ function CreateNewEmployee(){
         })
     })
 }
+/*
+this function calls mysql and gathers all departments. 
+After prompting the user which department the role belongs to, its salary, and its name, it will save this to the mysql database
+It uses 1 for-loops at the end to figure out what index the department belong to, and properly converts that into primary keys before sending the query
+*/
 function CreateNewRole(){
     db.query("select department.id as 'Department Id',department.name as 'Department Name' from department",(err, DepartmentResults)=>{
         var DepartmentOptions=[]
@@ -134,6 +149,7 @@ function CreateNewRole(){
         })
     })
 }
+//this is simply asking what would be the name of the department. asking recieving the answer, it pushes that to the mysql database
 function CreateNewDepartment(){
     inquirer
     .prompt([{name:"DepartmentName",message:"What will be the department name?"}])
@@ -144,6 +160,7 @@ function CreateNewDepartment(){
         })
     })
 }
+//mysql command that references all 3 tables including self joining the employee table. 
 function ViewAllEmloyees(){
     db.query(`select t1.first_name as 'First name', t1.last_name as 'Last name', role.title as Title,role.salary as Salary,department.name as Department, concat (m.first_name, " ",m.last_name) as Manager
     from employee t1 left join employee m on t1.manager_id = m.id left join role on t1.role_id=role.id join department on role.department_id=department.id`,(err, results)=>{
@@ -152,6 +169,7 @@ function ViewAllEmloyees(){
         AskAllQuestions()
     })
 }
+//mysql command to select all entries in department
 function ViewAllDepartment(){
     db.query("select department.id as 'Department Id',department.name as 'Department Name' from department",(err, results)=>{
         console.log("Results:")
@@ -159,6 +177,7 @@ function ViewAllDepartment(){
         AskAllQuestions()
     })
 }
+//mysql command to select all role entries, their salaries, and departments
 function ViewAllRoles(){
     db.query("select role.id as Id, role.title as Title, role.salary as Salary, Department.name as Department from role left join department on role.department_id=department.id",(err, results)=>{
         console.log("Results:")
@@ -166,6 +185,7 @@ function ViewAllRoles(){
         AskAllQuestions()
     })
 }
+//function thats always called at the end of every answer to create an infinite loop. it asks all the questions to mess with employee data, role data, and department data.
 function AskAllQuestions(){
     inquirer
     .prompt([
