@@ -20,6 +20,15 @@ const db = mysql.createConnection(
 function CreateNewEmployee(){
 
 }
+function CreateNewRole(){
+    db.query("select department.id as 'Department Id',department.name as 'Department Name' from department",(err, results)=>{
+        console.log("Results:")
+        console.log(results)
+        console.log("Length of results: "+results.length)
+        console.log("Index 1 of results: ")
+        console.log(results[1])
+    })
+}
 function CreateNewDepartment(){
     inquirer
     .prompt([{name:"DepartmentName",message:"What will be the department name?"}])
@@ -63,7 +72,8 @@ function AskAllQuestions(){
                 "View all departments",
                 "View all roles",
                 "View all employees",
-                "Create new department"
+                "Create new department",
+                "Create new role"
             ]
         }
     ]).then((answers)=>{
@@ -75,6 +85,8 @@ function AskAllQuestions(){
             ViewAllEmloyees()
         }else if(answers.ChoiceMade=="Create new department"){
             CreateNewDepartment()
+        }else if(answers.ChoiceMade=="Create new role"){
+            CreateNewRole()
         }else{
             console.error("Invalid choice")
         }
