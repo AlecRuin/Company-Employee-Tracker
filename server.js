@@ -18,7 +18,42 @@ const db = mysql.createConnection(
     console.log(`Connected to the inventory_db database.`)
 );
 function CreateNewEmployee(){
-
+    db.query(`select role.id,role.title from role`,(err,RoleResults)=>{
+        console.log(RoleResults)
+        db.query(`select employee.id, concat(employee.first_name," ",employee.last_name) as Names from employee`,(err,EmployeeNames)=>{
+            console.log(EmployeeNames)
+            var RoleOptions = []
+            var EmployeeOptions=["null"]
+            for (var x=0;x<RoleResults.length;x++){RoleOptions.push(RoleResults[x].title)}
+            for (var x=0;x<EmployeeNames.length;x++){EmployeeOptions.push(EmployeeNames[x].Names)}
+            console.log(RoleOptions)
+            console.log(EmployeeOptions)
+            inquirer.prompt([
+                {
+                    message:"What is the employee's first name?",
+                    name:"first_name"
+                },
+                {
+                    message:"What is the employee's last name?",
+                    name:"last_name"
+                },
+                {
+                    type:"list",
+                    message:"What is the role of the employee?",
+                    choices:RoleOptions,
+                    name:employee_role
+                },
+                {
+                    type:"list",
+                    message:"Does the employee report to a manager?",
+                    name:"ReportTo",
+                    choices:EmployeeOptions
+                }
+            ]).then((answers)=>{
+                console.log(answers)
+            })
+        })
+    })
 }
 function CreateNewRole(){
     db.query("select department.id as 'Department Id',department.name as 'Department Name' from department",(err, DepartmentResults)=>{
@@ -26,7 +61,6 @@ function CreateNewRole(){
         for (var x=0;x<DepartmentResults.length;x++){
             DepartmentOptions.push(DepartmentResults[x]["Department Name"])
         }
-        console.log(DepartmentOptions)
         inquirer
         .prompt([
             {
@@ -53,7 +87,6 @@ function CreateNewRole(){
                     break
                 }
             }
-            console.log(`insert into role (title,salary,department_id) values ("${answers.RoleName}",${Number(answers.RoleSalary)},${Number(DPTChoice)})`)
             db.query(`insert into role (title,salary,department_id) values ("${answers.RoleName}",${Number(answers.RoleSalary)},${Number(DPTChoice)})`,(err,results)=>{
                 err ? console.error(err) : console.log("Role successfully created")
                 AskAllQuestions()
@@ -105,7 +138,8 @@ function AskAllQuestions(){
                 "View all roles",
                 "View all employees",
                 "Create new department",
-                "Create new role"
+                "Create new role",
+                "Create new employee"
             ]
         }
     ]).then((answers)=>{
@@ -119,13 +153,11 @@ function AskAllQuestions(){
             CreateNewDepartment()
         }else if(answers.ChoiceMade=="Create new role"){
             CreateNewRole()
+        }else if(answers.ChoiceMade=="Create new employee"){
+            CreateNewEmployee()
         }else{
             console.error("Invalid choice")
         }
     })
 }
 AskAllQuestions()
-/*db.query("select * from role",(err, results)=>{
-    console.log("Results:")
-    console.log(results)
-})*/
