@@ -53,8 +53,8 @@ function CreateNewRole(){
                     break
                 }
             }
-            console.log(`(${toString(answers.RoleName)},${Number(answers.RoleSalary)},${Number(DPTChoice)})`)
-            db.query(`insert into role (title,salary,department_id) values (${toString(answers.RoleName)},${Number(answers.RoleSalary)},${Number(DPTChoice)})`,(err,results)=>{
+            console.log(`insert into role (title,salary,department_id) values ("${answers.RoleName}",${Number(answers.RoleSalary)},${Number(DPTChoice)})`)
+            db.query(`insert into role (title,salary,department_id) values ("${answers.RoleName}",${Number(answers.RoleSalary)},${Number(DPTChoice)})`,(err,results)=>{
                 err ? console.error(err) : console.log("Role successfully created")
                 AskAllQuestions()
             })
