@@ -23,4 +23,4 @@ This program allows users to generate a MySQL database for their employees. You 
 
 ## Example Video
 
-[Video](https://youtu.be/13Na9IQlWBs)
+[Video](https://youtu.be/rlRT2Tjp4qU)
